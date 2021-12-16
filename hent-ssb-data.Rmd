@@ -13,7 +13,7 @@ library(lubridate)
 knitr::opts_chunk$set(echo=FALSE, include = FALSE)
 ```
 
-```{r}
-load("knr.Rdata")
-```
+
+
+
 
