@@ -1,6 +1,19 @@
 ---
-title: "R Notebook"
+title: "Hent data"
 output: html_notebook
 ---
 
+
+```{r}
+suppressPackageStartupMessages({
+library(PxWebApiData)
+library(tidyverse)
+library(lubridate)
+})
+knitr::opts_chunk$set(echo=FALSE, include = FALSE)
+```
+
+```{r}
+load("knr.Rdata")
+```
 
