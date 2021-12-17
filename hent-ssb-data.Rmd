@@ -128,7 +128,6 @@ pm2_2006 %>%
 
 iii) complete.cases 2008:
 
-
 ```{r}
 pm2_2008 %>%
   complete.cases() %>% 
@@ -151,10 +150,7 @@ rm(pm2_raw)
 
 Gjør om **pm2_2008** til 214 complete caser, legges inn i pm2
 
-```{r}
-pm2 <- pm2_2008 %>% 
-  na.omit(pm2)
-```
+
 
 Nå er  **pm2** datasettet klart for analyse.
 
@@ -300,7 +296,7 @@ pm2 <- merge(pm2, pop_08_17_ya_p)
 
 ```{r}
 pm2 <- pm2 %>% 
-  select(knr, knavn, aar, pm2, Menn_ya_p, Kvinner_ya_p, Total_ya_p)
+  select( knr, knavn, aar, pm2, Menn_ya_p, Kvinner_ya_p, Total_ya_p)
 ```
 
 ## Rydder:

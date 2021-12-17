@@ -1,0 +1,207 @@
+---
+title: "Modeller"
+output: html_notebook
+---
+
+```{r setup, echo=FALSE, message=FALSE}
+suppressPackageStartupMessages({
+  library(tidyverse)
+  library(lubridate)
+  library(modelr)
+  library(broom)
+  library(lmtest)
+  library(sandwich)
+  library(viridis)
+})
+# Chunkopsjoner nedenfor er til eget bruk
+
+knitr::opts_chunk$set(echo = FALSE, include = FALSE)
+```
+
+```{r}
+pm2 <- read_csv("pm2.csv",show_col_types = FALSE)
+
+```
+
+```{r mutatetogstring}
+pm2 <- pm2 %>% 
+  mutate(
+    fnr = str_sub(knr, 1,2),
+    aar_f = str_sub(aar)
+  )
+```
+
+```{r serhead}
+head(pm2)
+```
+
+```{r parsefactor}
+pm2 %>% 
+  mutate(
+    fnr = parse_factor(fnr, levels = fnr),
+    aar_f = parse_factor(aar_f, levels = aar_f)
+  )
+```
+
+
+
+```{r mutateogselect}
+pm2 <- pm2 %>% 
+  mutate(
+    Trade_pc_100K = Trade_p/100000
+  ) 
+```
+
+
+```{r}
+
+head(pm2, n = 4)
+```
+
+# Modell
+
+```{r}
+mod1 <- 'pm2 ~ aar_f + Total_ya_p + inc_k1 + inc_k5 + uni_k_mf + uni_l_mf + Trade_pc_100K'
+```
+
+
+```{r}
+
+lm1 = lm(mod1, data = pm2)
+```
+
+
+```{r}
+summary(lm1)
+```
+
+
+### ii
+
+```{r}
+pm2 %>%
+  add_residuals(lm1)
+```
+
+
+### Residualene fra linær modell i datasettet pm2
+
+
+```{r}
+pm2 %>% 
+  add_residuals(lm1)
+head(pm2, n=4)
+```
+
+
+## Forklaring 
+
+### i 
+I år 2009 øker pm2 104, i 2010 med 908,..., i år 2017 øker pm2 med 5146. 
+Året 2009 er ikke signifikant, men koeffisientene er signifikante på 0.1% signifikansnivå fra 2010-2017. Her forekommer økning i koeffisientene fra et år til neste. 
+
+
+
+## Heteroskedastisitet 
+
+### i.
+
+```{r bptest}
+bptest(lm1)
+```
+
+```{r}
+library(gvlma)
+gvlma(lm1)
+```
+
+
+### iii.
+
+```{r}
+coeftest(lm1)
+```
+
+```{r}
+vcovHC(lm1)
+```
+
+### iv.
+
+```{r}
+pm2 <- pm2 %>%
+  add_residuals(lm1)
+```
+
+### v.
+
+```{r}
+pm2 <- pm2 %>%
+  mutate(aar_d =make_date(aar))
+```
+
+
+### vi.
+
+```{r}
+pm2 <- pm2 %>%
+  mutate(fylke = substr(knr, start = 1, stop = 2)) 
+
+pm2 <- pm2 %>% 
+  filter(fylke %in% c("01", "02", "03", "11", "12"))
+```
+
+
+
+### vii og viii.
+
+```{r}
+pm2 %>%
+  unnest(c(fylke)) %>%
+  group_by(fylke, aar_d) %>%
+  summarize(mean_fylke = mean(resid)
+            ) %>% 
+  ggplot(aes(x = aar_d, y = mean_fylke, colour = fylke)) +
+  geom_line(lwd=1) +
+  theme(legend.position = "bottom")+
+  geom_hline(yintercept = 0, colour = "black")
+
+```
+
+# Dummy fylke og år
+
+
+### i og ii.
+Innfører en dummy for hvert fylke hvert år. (Husk * gir interaksjonsvariabler automatisk i Rs formula).
+Bruk interaksjon mellom fnr og aar_f istedenfor aar_f. La modell 2 ellers være lik modell 1.
+
+
+```{r}
+mod2 <- 'pm2 ~ aar_f*fnr + Total_ya_p + inc_k1 + inc_k5 + uni_k_mf + uni_l_mf + Trade_pc_100K'
+lm2 <- lm(mod2, data = pm2)
+summary(lm2)
+```
+
+```{r}
+pm2 <- pm2 %>%
+  mutate(res_m2 = resid(lm2))
+```
+
+
+iii. Legg residualene fra lm2 til pm2 og kall dem res_m2
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
