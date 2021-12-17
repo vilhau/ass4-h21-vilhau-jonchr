@@ -147,8 +147,7 @@ pm2 <- pm2 %>%
 pm2 <- pm2 %>%
   mutate(fylke = substr(knr, start = 1, stop = 2)) 
 
-pm2 <- pm2 %>% 
-  filter(fylke %in% c("01", "02", "03", "11", "12"))
+
 ```
 
 
@@ -157,6 +156,7 @@ pm2 <- pm2 %>%
 
 ```{r}
 pm2 %>%
+  filter(fylke %in% c("01", "02", "03", "11", "12")) %>% 
   unnest(c(fylke)) %>%
   group_by(fylke, aar_d) %>%
   summarize(mean_fylke = mean(resid)
@@ -182,13 +182,69 @@ lm2 <- lm(mod2, data = pm2)
 summary(lm2)
 ```
 
+### iii.
+
+
 ```{r}
 pm2 <- pm2 %>%
   mutate(res_m2 = resid(lm2))
 ```
 
+### iv.
 
-iii. Legg residualene fra lm2 til pm2 og kall dem res_m2
+Delplott
+
+```{r}
+pm2 %>% filter(fnr %in% c("01", "02", "04", "11", "12")) %>%
+ggplot(mapping = aes(x = aar_d, y = res_m2)) +
+geom_line(aes(group = knavn)) +
+scale_size_manual(values = c(seq(2.0, 0.5, by = -0.1))) +
+geom_hline(yintercept = 0) +
+theme(legend.position = 'bottom') +
+  facet_wrap(~fylke)
+```
+
+### i, ii.
+
+Kvaliteten på modellen er ikke helt optimal da den mangler noen variabler.
+Dette kan ha noe med heteroskedatisitet i modell at det er stor variasjon.
+Det er store residualer, spesielt i Rogaland.
+
+### iii.
+
+```{r}
+
+
+pm2 %>% filter(fnr %in% c("11")) %>%
+ggplot(mapping = aes(x = aar_d, y = res_m2)) +
+scale_color_viridis(discrete = TRUE, option = "D") +
+geom_line(aes(group = knavn, colour = knavn, size =knavn)) +
+scale_size_manual(values = c(seq(2.0, 0.5, by = -0.1))) +
+geom_hline(yintercept = 0) +
+theme(legend.position = 'bottom')
+```
+Det er ikke stor nok fargeskala for alle kommunene.
+
+
+
+#i.
+
+```{r}
+pm2 %>% filter(knr %in% c("1119", "1120", "1127", "1121", "1130", "1135", "1106", "1149")) %>%
+ggplot(mapping = aes(x = aar_d, y = res_m2)) +
+scale_color_viridis(discrete = TRUE, option = "H") +
+geom_line(aes(group = knavn, colour = knavn, size =knavn)) +
+scale_size_manual(values = c(seq(2.0, 0.5, by = -0.1))) +
+geom_hline(yintercept = 0) +
+theme(legend.position = 'bottom')
+```
+
+# ii.
+
+De som ligger nærmere Stavanger overvurderes.
+
+# Modell for hvert år
+
 
 
 
