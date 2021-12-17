@@ -245,6 +245,67 @@ De som ligger nærmere Stavanger overvurderes.
 
 # Modell for hvert år
 
+```{r}
+pm2_n <- pm2 %>% 
+  group_by(aar) %>%
+  select(pm2, fnr, knr, aar, aar_f, Menn_ya_p, Kvinner_ya_p, Total_ya_p, inc_k1, inc_k5, uni_k_mf, uni_l_mf, Trade_pc_100K) %>% 
+  nest()
+```
+
+```{r}
+pm2_n
+```
+
+```{r}
+pm2_n$data[[1]] %>%
+head(n = 5)
+```
+
+```{r}
+dim(pm2_n)
+```
+
+
+```{r}
+kom_model <- function(a_df) {
+  lm(pm2 ~ fnr + Total_ya_p + inc_k1 + inc_k5 + uni_k_mf + uni_l_mf + Trade_pc_100K, data = pm2)
+}
+```
+
+
+
+```{r}
+pm2_n <- pm2_n %>% 
+  mutate(model = map(data, .f = kom_model)) 
+```
+
+
+```{r}
+kom_model(pm2_n$aar) %>% 
+  summary()
+```
+
+```{r}
+pm2_n %>% 
+  filter(aar%in% c("2008")) %>% 
+  .$model %>% 
+  map_df(glance) %>% 
+  print()
+```
+
+```{r}
+mod_sum <- pm2_n %>% 
+  filter(aar %in% c("2008", "2009", "2010", "2011", "2012", "2013", "2014", "2015", "2016", "2017")) %>% 
+  mutate(mod_summary = map(.x = model, .f = glance)) %>% 
+  unnest(mod_summary) %>% 
+  print()
+```
+
+```{r}
+coef_df <- mod_sum %>% 
+  map_df() %>% 
+  as.tibble()
+```
 
 
 
