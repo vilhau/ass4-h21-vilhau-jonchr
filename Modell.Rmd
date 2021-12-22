@@ -14,7 +14,7 @@ suppressPackageStartupMessages({
   library(viridis)
 })
 
-knitr::opts_chunk$set(echo = FALSE, include = FALSE)
+# knitr::opts_chunk$set(echo = FALSE, include = FALSE)
 ```
 
 
@@ -329,16 +329,78 @@ coef_df <- coef_df %>%
 ```
 
 
+### ii)
+
+Variabel for pivot_longer
+
+
+```{r}
+coef_df_long <- coef_df %>%
+  pivot_longer(
+    cols = `(Intercept)`:`Trade_pc_100K`,
+    names_to = "variables",
+    values_to = "coef")
+```
 
 
 
+### iii)
+
+GG-plot:
+
+```{r}
+coef_df_long %>% 
+  select(aar, variables,coef)
+ #måtte legge denne til for chunkene ville kjøre
+```
 
 
+```{r}
+coef_df_long %>%
+  select(aar, variables, coef) %>%
+  filter(
+    variables %in% c("fnr02", "fnr03", "fnr04", "fnr10", "fnr11", "fnr12", "fnr14")
+  ) %>%
+  ggplot(mapping = aes(x = aar, y = coef, colour = variables)) +
+  scale_color_viridis(discrete = TRUE, option = "D") +
+  geom_line(aes(group = variables), lwd = 1) +
+  theme(legend.position = 'bottom')
+```
 
 
+### iv)
 
+Fra gg-plottet ser jeg at fnr03 ligger høyest og er der fylket hvor prisene øker mest. Bortsett fra liten prisøkning etter 2015 er fnr02 svært stabil, og sammelignet med de andre fylkene er dette den hvor prisutviklingen er jevnest. Bortsett fra fnr03 og fnr02 ser vi en negativ prisutvikling i fylkene, da spesielt fra 2013 og utover.
 
+### v)
 
+Prisnedgangen vi ser etter 2014 for flere av fylkene i sørvest-Norge ( rogaland, hordaland, sogn og fjordane), og prisoppgangen i Oslo og Akershus, tror jeg skyldes oljekrisen i 2014.
+Lav aktivitet i oljenæringen, færre oppdrag for oljeservice relaterte virksomheter osv. medførte økt arbeidsledighet i fylker hvor oljerelatert virksomhet var sterkt representert i markedet.
+Dette kan ha medført at arbeidsledige flyttet til Oslo/Akershus for ledige stillinger i et mer diversifisert arbeidsmarked. Antakelsene mine samsvarer om gg-plottet over.
+
+### i)
+
+```{r}
+coef_df_long %>%
+select(aar, variables, coef) %>%
+filter(
+variables %in% c("Total_ya_p", "inc_k1", "inc_k5", "uni_k_mf", "uni_l_mf", "Trade_pc_100K")
+) %>%
+ggplot(mapping = aes(x = aar, y = coef, colour = variables)) +
+scale_color_viridis(discrete = TRUE, option = "D") +
+geom_line(aes(group = variables), lwd = 1) +
+theme(legend.position = 'bottom')
+```
+
+### ii)
+
+uni_k_mf, Total_ya_p og inc_k5 ser ut til å være stabile over tid. 
+Fra 2010 til 2016 var ogsp uni_l_mf relativr stabil, denne har derimot svak økning fra 2014 og utover.
+Over tid har inc_k1 hatt en signifikant nedgang. Trade_pc_100K ser ut til å være ustabil, og da særlig i årene etter 2010.
+
+```{r}
+#siste
+```
 
 
 
