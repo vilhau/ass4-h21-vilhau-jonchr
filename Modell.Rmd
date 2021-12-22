@@ -14,7 +14,7 @@ suppressPackageStartupMessages({
   library(viridis)
 })
 
-# knitr::opts_chunk$set(echo = FALSE, include = FALSE)
+
 ```
 
 
@@ -109,7 +109,6 @@ bptest(lm1)
 ```
 
 ```{r}
-# smart!
 library(gvlma)
 gvlma(lm1)
 ```
@@ -136,9 +135,6 @@ pm2 <- pm2 %>%
 
 ```{r}
 pm2 <- pm2 %>%
-  # må paste på "-01-01" for at date skal virke
-  # make _date ser ut til å lage et datetime objekt
-  # Vi trenger ikke tidspunkt ;-)
   mutate(aar_d = date(paste0(aar, "-01-01")))
 ```
 
