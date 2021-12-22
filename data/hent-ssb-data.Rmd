@@ -15,7 +15,8 @@ knitr::opts_chunk$set(echo=FALSE, include = FALSE)
 
 
 ```{r}
-load("~/Documents/MASTER/Data Science/Git_projects/ass4-h21-vilhau-jonchr/data/knr.Rdata")
+# bruk relativ sti
+load("knr.Rdata")
 ```
 
 Henter gjennomsnittlig kvm-pris for eneboliger (2002-2017)
@@ -60,7 +61,6 @@ mutate(
   knavn = pm2_raw$desc$region) %>% 
   group_by(knr) %>% 
   select(knr, aar, pm2, knavn)
-
 ```
 
 
@@ -68,8 +68,13 @@ Bare interessert i eneboliger. Ser i pm2_row at eneboliger heter *01*. Lager *mo
 
 ```{r}
 
-load("~/Documents/MASTER/Data Science/Git_projects/ass4-h21-vilhau-jonchr/data/test_string_tib.Rdata")
-moenster <- '\\s+\\(\\d*[19-]\\d*[2019]\\)\\s*$'
+load("test_string_tib.Rdata")
+# Her er dere litt for spesifikke. Kan ha andre år enn 2019
+#moenster <- '\\s+\\(\\d*[19-]\\d*[2019]\\)\\s*$'
+# Fra venstre: null eller flere white space, start parentes, null eller flere
+# tall eller bindestrek (f.eks 1991-2001 eller bare -2018), parentes slutt,
+# null eller flere white space og så til slutt linjeslutt ($)
+moenster <- '\\s*\\([\\d-]*\\)\\s*$'
 
 test_string_tib %>% 
   mutate(
@@ -92,8 +97,15 @@ i) Finner antall NA- verdier
 pm2 %>% 
   map_df(is.na) %>% 
   map_df(sum) %>% 
-  as.tibble()
+  # as.tibble() har skiftet navn til as_tibble() i nyere versjoner
+  as_tibble()
 ```
+
+```{r}
+# Min variant som ikke er så tidyversed
+sum(is.na(pm2))
+```
+
 
 2903 NA verdier i dette datasettet
 
@@ -118,11 +130,10 @@ pm2_2008 <- pm2 %>%
 ii) Complete.cases 2006:
 
 ```{r}
-
+# Elegant gjort! Meget bra
 pm2_2006 %>%
   complete.cases() %>% 
   sum()
-
 ```
 
 
