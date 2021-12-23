@@ -93,11 +93,19 @@ head(pm2, n=4)
 ## Forklaring
 
 ### i
+<<<<<<< HEAD
 
 I år 2009 øker pm2 104, i 2010 med 908,..., i år 2017 øker pm2 med 5146.
 Året 2009 er ikke signifikant, men koeffisientene er signifikante på 0.1% signifikansnivå fra 2010-2017.
 Her forekommer økning i koeffisientene fra et år til neste.
 
+=======
+
+I år 2009 øker pm2 104, i 2010 med 908,..., i år 2017 øker pm2 med 5146.
+Året 2009 er ikke signifikant, men koeffisientene er signifikante på 0.1% signifikansnivå fra 2010-2017.
+Her forekommer økning i koeffisientene fra et år til neste.
+
+>>>>>>> a3f72084967d8d244c62590714b3805ec88379dd
 ## Heteroskedastisitet
 
 ### i.
@@ -305,6 +313,7 @@ coef_df <- mod_sum$model %>%
 
 ## Den siste delen mangler
 
+<<<<<<< HEAD
 Her er min kode for avslutningen.
 
 i\.
@@ -391,6 +400,92 @@ geom_line(aes(group = variables), lwd = 1) +
 theme(legend.position = 'bottom')
 ```
 
+=======
+i\.
+Lag en ny variabel av type date i `coef_df` som angir år.
+
+```{r}
+
+coef_df <- coef_df %>%
+
+mutate(
+
+aar = ymd(paste(2008:2017, "-01-01", sep = ""))
+
+) %>%
+
+select(aar, everything())
+
+```
+
+i.  Pivot_longer `coef_df` til `coef_df_long.`
+
+```{r}
+
+coef_df_long <- coef_df %>%
+
+pivot_longer(
+
+cols = `(Intercept)`:`Trade_pc_100K`,
+
+names_to = "variables",
+
+values_to = "coef"
+
+)
+
+```
+
+i.  Lag så et plot av fylke-faktorvariablenes koeffisienter for fylkene "fnr02", "fnr03", "fnr04", "fnr10", "fnr11", "fnr12", "fnr14" fra år 2008 til 2017.
+
+ii. Hva sier plot-et oss om prisutviklingen i disse fylkene?
+
+iii. Hva skjedde i 2014?
+
+Her er kode for å lage plottet:
+
+```{r, echo = TRUE, include = TRUE}
+
+coef_df_long %>%
+
+select(aar, variables, coef) %>%
+
+filter(
+
+variables %in% c("fnr02", "fnr03", "fnr04", "fnr10", "fnr11", "fnr12", "fnr14")
+
+) %>%
+
+ggplot(mapping = aes(x = aar, y = coef, colour = variables)) +
+
+scale_color_viridis(discrete = TRUE, option = "D") +
+
+geom_line(aes(group = variables), lwd = 1) +
+
+theme(legend.position = 'bottom')
+
+```
+
+i.  Lag et plot tilsvarende det ovenfor for fnr, men nå for variablene Total_ya_p, inc_k1, inc_k5, uni_k\_mf, uni_l\_mf og Trade_pc_100K.
+    (Plottet er gjengitt nedenfor, dere skal gjenskape det vha ggplot)
+
+ii. Diskuter om koeffisientene ser ut til å være stabile over tid.
+
+```{r, include = TRUE}
+coef_df_long %>%
+select(aar, variables, coef) %>%
+filter(variables %in% c("Total_ya_p", "inc_k1", "inc_k5",
+"uni_k_mf", "uni_l_mf", "Trade_pc_100K")
+) %>%
+ggplot(
+  mapping = aes(x = aar, y = coef, colour = variables)
+  ) +
+scale_color_viridis(discrete = TRUE, option = "D") +
+geom_line(aes(group = variables), lwd = 1) +
+theme(legend.position = 'bottom')
+```
+
+>>>>>>> a3f72084967d8d244c62590714b3805ec88379dd
 ```{r}
 #siste
 ```
