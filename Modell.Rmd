@@ -1,6 +1,9 @@
 ---
 title: "Modeller"
-output: html_notebook
+output:
+  pdf_document: default
+  html_document:
+    df_print: paged
 ---
 
 ```{r setup, echo=FALSE, message=FALSE}
@@ -45,15 +48,12 @@ pm2 %>%
   )
 ```
 
-
-
 ```{r mutateogselect}
 pm2 <- pm2 %>% 
   mutate(
     Trade_pc_100K = Trade_p/100000
   ) 
 ```
-
 
 ```{r}
 
@@ -66,17 +66,14 @@ head(pm2, n = 4)
 mod1 <- 'pm2 ~ aar_f + Total_ya_p + inc_k1 + inc_k5 + uni_k_mf + uni_l_mf + Trade_pc_100K'
 ```
 
-
 ```{r}
 
 lm1 = lm(mod1, data = pm2)
 ```
 
-
 ```{r}
 summary(lm1)
 ```
-
 
 ### ii
 
@@ -85,9 +82,7 @@ pm2 %>%
   add_residuals(lm1)
 ```
 
-
 ### Residualene fra linær modell i datasettet pm2
-
 
 ```{r}
 pm2 %>% 
@@ -95,16 +90,15 @@ pm2 %>%
 head(pm2, n=4)
 ```
 
+## Forklaring
 
-## Forklaring 
+### i
 
-### i 
-I år 2009 øker pm2 104, i 2010 med 908,..., i år 2017 øker pm2 med 5146. 
-Året 2009 er ikke signifikant, men koeffisientene er signifikante på 0.1% signifikansnivå fra 2010-2017. Her forekommer økning i koeffisientene fra et år til neste. 
+I år 2009 øker pm2 104, i 2010 med 908,..., i år 2017 øker pm2 med 5146.
+Året 2009 er ikke signifikant, men koeffisientene er signifikante på 0.1% signifikansnivå fra 2010-2017.
+Her forekommer økning i koeffisientene fra et år til neste.
 
-
-
-## Heteroskedastisitet 
+## Heteroskedastisitet
 
 ### i.
 
@@ -117,7 +111,6 @@ bptest(lm1)
 library(gvlma)
 gvlma(lm1)
 ```
-
 
 ### iii.
 
@@ -146,7 +139,6 @@ pm2 <- pm2 %>%
   mutate(aar_d = date(paste0(aar, "-01-01")))
 ```
 
-
 ### vi.
 
 ```{r}
@@ -155,8 +147,6 @@ pm2 <- pm2 %>%
 
 
 ```
-
-
 
 ### vii og viii.
 
@@ -176,11 +166,12 @@ pm2 %>%
 
 # Dummy fylke og år
 
-
 ### i og ii.
-Innfører en dummy for hvert fylke hvert år. (Husk * gir interaksjonsvariabler automatisk i Rs formula).
-Bruk interaksjon mellom fnr og aar_f istedenfor aar_f. La modell 2 ellers være lik modell 1.
 
+Innfører en dummy for hvert fylke hvert år.
+(Husk \* gir interaksjonsvariabler automatisk i Rs formula).
+Bruk interaksjon mellom fnr og aar_f istedenfor aar_f.
+La modell 2 ellers være lik modell 1.
 
 ```{r}
 mod2 <- 'pm2 ~ aar_f*fnr + Total_ya_p + inc_k1 + inc_k5 + uni_k_mf + uni_l_mf + Trade_pc_100K'
@@ -189,7 +180,6 @@ summary(lm2)
 ```
 
 ### iii.
-
 
 ```{r}
 pm2 <- pm2 %>%
@@ -229,9 +219,8 @@ scale_size_manual(values = c(seq(2.0, 0.5, by = -0.1))) +
 geom_hline(yintercept = 0) +
 theme(legend.position = 'bottom')
 ```
+
 Det er ikke stor nok fargeskala for alle kommunene.
-
-
 
 #i.
 
@@ -272,7 +261,6 @@ head(n = 5)
 dim(pm2_n)
 ```
 
-
 ```{r}
 # data må være lik a_df som er argumentet
 kom_model <- function(a_df) {
@@ -280,13 +268,10 @@ kom_model <- function(a_df) {
 }
 ```
 
-
-
 ```{r}
 pm2_n <- pm2_n %>% 
   mutate(model = map(data, .f = kom_model)) 
 ```
-
 
 ```{r}
 # kom_model(pm2_n$aar) %>% 
@@ -318,18 +303,92 @@ coef_df <- mod_sum$model %>%
   tibble()
 ```
 
+## Den siste delen mangler
 
+i\.
+Lag en ny variabel av type date i `coef_df` som angir år.
 
+```{r}
 
+coef_df <- coef_df %>%
 
+mutate(
 
+aar = ymd(paste(2008:2017, "-01-01", sep = ""))
 
+) %>%
 
+select(aar, everything())
 
+```
 
+i.  Pivot_longer `coef_df` til `coef_df_long.`
 
+```{r}
 
+coef_df_long <- coef_df %>%
 
+pivot_longer(
 
+cols = `(Intercept)`:`Trade_pc_100K`,
 
+names_to = "variables",
 
+values_to = "coef"
+
+)
+
+```
+
+i.  Lag så et plot av fylke-faktorvariablenes koeffisienter for fylkene "fnr02", "fnr03", "fnr04", "fnr10", "fnr11", "fnr12", "fnr14" fra år 2008 til 2017.
+
+ii. Hva sier plot-et oss om prisutviklingen i disse fylkene?
+
+iii. Hva skjedde i 2014?
+
+Her er kode for å lage plottet:
+
+```{r, echo = TRUE, include = TRUE}
+
+coef_df_long %>%
+
+select(aar, variables, coef) %>%
+
+filter(
+
+variables %in% c("fnr02", "fnr03", "fnr04", "fnr10", "fnr11", "fnr12", "fnr14")
+
+) %>%
+
+ggplot(mapping = aes(x = aar, y = coef, colour = variables)) +
+
+scale_color_viridis(discrete = TRUE, option = "D") +
+
+geom_line(aes(group = variables), lwd = 1) +
+
+theme(legend.position = 'bottom')
+
+```
+
+i.  Lag et plot tilsvarende det ovenfor for fnr, men nå for variablene Total_ya_p, inc_k1, inc_k5, uni_k\_mf, uni_l\_mf og Trade_pc_100K.
+    (Plottet er gjengitt nedenfor, dere skal gjenskape det vha ggplot)
+
+ii. Diskuter om koeffisientene ser ut til å være stabile over tid.
+
+```{r, include = TRUE}
+coef_df_long %>%
+select(aar, variables, coef) %>%
+filter(variables %in% c("Total_ya_p", "inc_k1", "inc_k5",
+"uni_k_mf", "uni_l_mf", "Trade_pc_100K")
+) %>%
+ggplot(
+  mapping = aes(x = aar, y = coef, colour = variables)
+  ) +
+scale_color_viridis(discrete = TRUE, option = "D") +
+geom_line(aes(group = variables), lwd = 1) +
+theme(legend.position = 'bottom')
+```
+
+```{r}
+#siste
+```

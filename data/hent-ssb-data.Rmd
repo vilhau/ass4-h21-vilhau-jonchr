@@ -1,6 +1,9 @@
 ---
 title: "Hent data"
-output: html_notebook
+output:
+  pdf_document: default
+  html_document:
+    df_print: paged
 ---
 
 
@@ -10,7 +13,7 @@ library(PxWebApiData)
 library(tidyverse)
 library(lubridate)
 })
-knitr::opts_chunk$set(echo=FALSE, include = FALSE)
+#knitr::opts_chunk$set(echo=FALSE, include = FALSE)
 ```
 
 
@@ -147,10 +150,12 @@ pm2_2008 %>%
 
 ```{r}
 pm2 <- pm2 %>% 
-  left_join(pm2_2008) %>% 
-  na.omit()
+  # legger til by = c("knr", "knavn") så slipper en message
+  left_join(pm2_2008, by = c("knr", "knavn")) %>% 
+  na.omit() %>% 
+  # Du har med år fra før 2008, legger til filter på år
+    filter(aar > 2007)
 ```
-
 
 Så fjernes pm2_raw fra environment.
 
@@ -168,12 +173,24 @@ Nå er  **pm2** datasettet klart for analyse.
 
 # Befolkning
 
+Vi trenger bare hente data for de knr vi har i pm2
+
 ```{r}
-pop_08_17_ya_raw <- ApiData(urlToData = "07459",
-   Region = knr,
-   Kjonn = c(1,2),
-   Alder = list("agg:TredeltGrupperingB2",
-                 c("F20-64")),
+new_knr <- unique(pm2$knr)
+```
+
+
+```{r}
+pop_08_17_ya_raw <- ApiData(
+  urlToData = "07459",
+  # endrer til new_knr så henter vi bare data fra dem vi trenger
+  # Region = knr,
+  Region = new_knr,
+  Kjonn = c(1,2),
+  Alder = list(
+    "agg:TredeltGrupperingB2",
+    c("F20-64")
+    ),
    Tid = c(as.character(2008:2017))
    )$dataset %>%
   select(-ContentsCode, -Alder)
@@ -188,9 +205,12 @@ pop_08_17_ya <- pop_08_17_ya_raw %>%
     values_from = value)
 ```
 
+
+
 Navn:
 
 ```{r}
+# Kan gjøres slik, men lettere og mer tidyverse aktig å benytte rename
 names(pop_08_17_ya)[[1]] <- "knr"
 names(pop_08_17_ya)[[2]] <- "aar"
 names(pop_08_17_ya)[[3]] <- "ya_Menn"
@@ -215,7 +235,7 @@ dim(pop_08_17_ya)
 ```{r}
 pop_08_17_raw <- ApiData(
   urlToData = "07459",
-  Region = knr,
+  Region = new_knr,
   Kjonn = c(1,2),
   Alder = list("agg:TodeltGrupperingB",
                c("H17", "H18")),
@@ -299,6 +319,14 @@ pop_08_17_ya_p <- pop_08_17_ya_p %>%
 head(pop_08_17_ya_p, n=5)
 ```
 
+```{r}
+# Litt enklere måte å gjøre det samme. Bruker litt R magic ;-)
+tmp_ya_p <- cbind(
+  pop_08_17[,1:2], 
+  (pop_08_17_ya[,3:5]/pop_08_17[,3:5])*100
+  )
+```
+
 ## Ya variabler til pm2 tibble
 
 ```{r mergetilpm2}
@@ -325,7 +353,8 @@ rm(pop_08_17_raw, pop_08_17_ya_raw, pop_08_17, pop_08_17_ya, pm2_2006, pm2_2008)
 ```{r henterdata}
 inc_08_17_raw <- ApiData(
   urlToData = "12558",
-  Region = knr,
+  # Bruker igjen new-knr så henter vi bare de dataene vi trenger
+  Region = new_knr,
   Desiler = c("01", "02", "09", "10"),
   ContentsCode = "AndelHush",
   InntektSkatt = "00",
@@ -391,7 +420,8 @@ rm(inc_08_17, inc_08_17_raw, pop_08_17_ya_p)
 ```{r}
 uni_p_raw <- ApiData(
   urlToData = "09429",
-  Region = knr,
+  # new_knr
+  Region = new_knr,
   Nivaa = c("03a", "04a"),
   Kjonn = TRUE,
   ContentsCode = "PersonerProsent",
@@ -463,7 +493,8 @@ pm2 <- merge(pm2, uni_p_raw)
 ```{r henter data av handelsomsetning}
 trade_08_17 <- ApiData(
   urlToData = "04776",
-  Region = knr,
+  # new_knr
+  Region = new_knr,
   Tid = c(
     as.character(2008:2017)
   )
@@ -514,8 +545,12 @@ pm2 %>%
 ```
 
 ```{r}
-write.csv(pm2, "pm2.csv")
+# Bruk heller tidyverse varianten write_csv(). Nyere og bedre
+write_csv(pm2, "pm2.csv")
 ```
 
+```{r}
+#siste
+```
 
 
